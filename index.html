@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ипотека без тумана</title>
+  <style>
+    :root {
+      --ink: #172230;
+      --muted: #677483;
+      --paper: #fbfaf7;
+      --panel: rgba(255, 255, 255, .84);
+      --line: #dce2e6;
+      --blue: #2859d9;
+      --blue-soft: #eaf0ff;
+      --green: #0c8a65;
+      --green-soft: #e8f7f1;
+      --red: #c83a4e;
+      --red-soft: #fff0f2;
+      --amber: #a45c00;
+      --amber-soft: #fff5df;
+      --shadow: 0 16px 44px rgba(28, 41, 56, .09);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 82% 2%, rgba(40, 89, 217, .13), transparent 28rem),
+        radial-gradient(circle at 8% 18%, rgba(12, 138, 101, .09), transparent 24rem),
+        var(--paper);
+      font: 16px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell { width: min(1260px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 44px 0 28px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 26px; height: 2px; background: currentColor; }
+    h1 { max-width: 850px; margin: 0; font-size: clamp(36px, 7vw, 72px); line-height: .98; letter-spacing: -.055em; }
+    .lead { max-width: 720px; margin: 20px 0 0; color: var(--muted); font-size: clamp(17px, 2vw, 20px); }
+    .micro { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+
+    main { padding-bottom: 72px; }
+    .layout { display: grid; grid-template-columns: minmax(300px, 390px) 1fr; gap: 22px; align-items: start; }
+    .panel {
+      border: 1px solid rgba(207, 216, 222, .9);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .inputs { position: sticky; top: 18px; padding: 22px; }
+    .section-head { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; margin-bottom: 18px; }
+    h2, h3 { margin: 0; letter-spacing: -.025em; }
+    h2 { font-size: 23px; }
+    h3 { font-size: 18px; }
+    .section-kicker { color: var(--muted); font-size: 13px; }
+    .form-section + .form-section { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 20px; }
+    .form-section h3 { margin-bottom: 13px; }
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { display: grid; gap: 6px; }
+    .field.wide { grid-column: 1 / -1; }
+    label { color: #465463; font-size: 13px; font-weight: 650; }
+    input, select {
+      width: 100%;
+      min-height: 43px;
+      border: 1px solid #cad3db;
+      border-radius: 11px;
+      padding: 9px 11px;
+      color: var(--ink);
+      background: rgba(255,255,255,.95);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(40,89,217,.12); }
+    .suffix-wrap { position: relative; }
+    .suffix-wrap input { padding-right: 40px; }
+    .suffix { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #87919a; pointer-events: none; }
+    .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 5px; border-radius: 13px; background: #edf1f4; }
+    .segmented label { position: relative; }
+    .segmented input { position: absolute; opacity: 0; pointer-events: none; }
+    .segmented span { display: grid; min-height: 52px; place-items: center; border-radius: 9px; padding: 8px; text-align: center; line-height: 1.2; color: #65717d; transition: .18s; }
+    .segmented input:checked + span { background: white; color: var(--ink); box-shadow: 0 3px 12px rgba(34,47,62,.1); }
+    .hint { margin: 9px 0 0; color: var(--muted); font-size: 12px; }
+    .reset {
+      width: 100%; margin-top: 18px; border: 0; border-radius: 11px; padding: 11px;
+      color: var(--blue); background: var(--blue-soft); font-weight: 750;
+    }
+
+    .results { display: grid; gap: 18px; }
+    .summary { padding: 22px; overflow: hidden; position: relative; }
+    .summary::after {
+      content: ""; position: absolute; width: 220px; height: 220px; right: -92px; top: -112px;
+      border-radius: 50%; background: rgba(40,89,217,.07);
+    }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; position: relative; z-index: 1; }
+    .summary-item { padding: 15px; border-radius: 15px; background: #f4f6f8; }
+    .summary-item strong { display: block; margin-top: 5px; font-size: 21px; letter-spacing: -.03em; }
+    .summary-item span { color: var(--muted); font-size: 12px; }
+    .budget-banner { margin-top: 14px; padding: 12px 14px; border-radius: 13px; font-size: 14px; font-weight: 650; }
+    .budget-banner.ok { color: #087052; background: var(--green-soft); }
+    .budget-banner.bad { color: #a4263a; background: var(--red-soft); }
+
+    .scenario-wrap { padding: 22px; }
+    .scenario-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .scenario {
+      position: relative; border: 1px solid var(--line); border-radius: 18px; padding: 18px;
+      background: white; transition: transform .16s, border-color .16s, box-shadow .16s;
+    }
+    .scenario:hover { transform: translateY(-2px); }
+    .scenario.selected { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(40,89,217,.1); }
+    .scenario.best::after {
+      content: "Больше экономии"; position: absolute; top: 14px; right: 14px; padding: 5px 8px;
+      border-radius: 999px; color: #087052; background: var(--green-soft); font-size: 10px; font-weight: 800; text-transform: uppercase;
+    }
+    .scenario h3 { padding-right: 96px; }
+    .scenario .date { margin: 18px 0 4px; font-size: 24px; font-weight: 820; letter-spacing: -.04em; }
+    .scenario .caption { color: var(--muted); font-size: 12px; }
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 15px; }
+    .metric { padding: 10px; border-radius: 11px; background: #f5f7f9; }
+    .metric span { display: block; color: var(--muted); font-size: 11px; }
+    .metric strong { display: block; margin-top: 3px; font-size: 14px; }
+    .scenario .status { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; font-weight: 700; }
+    .status.ok { color: var(--green); }
+    .status.bad { color: var(--red); }
+
+    .goal { padding: 22px; }
+    .goal-content { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; align-items: center; }
+    .goal-copy { color: var(--muted); }
+    .goal-number { padding: 18px; border-radius: 16px; background: var(--blue-soft); }
+    .goal-number span { display: block; color: #536689; font-size: 12px; }
+    .goal-number strong { display: block; margin-top: 5px; color: var(--blue); font-size: 25px; letter-spacing: -.035em; }
+    .goal-number small { display: block; margin-top: 5px; color: #536689; }
+
+    .details { padding: 22px; }
+    .chart-wrap { height: 230px; margin-top: 10px; }
+    canvas { width: 100%; height: 100%; }
+    .legend { display: flex; flex-wrap: wrap; gap: 13px; margin: 13px 0 0; color: var(--muted); font-size: 12px; }
+    .legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 50%; background: var(--dot); }
+    details { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px; }
+    summary { cursor: pointer; color: var(--blue); font-weight: 750; }
+    .table-scroller { max-height: 380px; overflow: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: 13px; }
+    table { width: 100%; border-collapse: collapse; min-width: 690px; font-size: 12px; }
+    th { position: sticky; top: 0; z-index: 1; padding: 10px; color: white; background: #25334a; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    td { padding: 9px 10px; border-top: 1px solid #e8ecef; text-align: right; }
+    tbody tr:nth-child(even) { background: #f7f9fa; }
+
+    .bank-note { padding: 20px 22px; background: var(--amber-soft); border-color: #edd9ae; box-shadow: none; }
+    .bank-note strong { color: var(--amber); }
+    .bank-note p { margin: 7px 0 0; color: #66563f; font-size: 14px; }
+    .error { display: none; padding: 16px; border-radius: 14px; color: #9e2638; background: var(--red-soft); border: 1px solid #f2c7ce; }
+    .error.show { display: block; }
+
+    footer { padding: 22px 0 40px; color: var(--muted); font-size: 12px; text-align: center; }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .inputs { position: static; }
+    }
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 20px, 1260px); }
+      header { padding-top: 28px; }
+      .fields, .scenario-grid, .summary-grid, .goal-content { grid-template-columns: 1fr; }
+      .panel, .scenario { border-radius: 16px; }
+      .inputs, .summary, .scenario-wrap, .goal, .details { padding: 16px; }
+      .scenario h3 { padding-right: 0; }
+      .scenario.best::after { position: static; display: inline-block; margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell">
+    <div class="eyebrow">Личный ипотечный помощник</div>
+    <h1>Закрыть раньше.<br>Жить спокойно.</h1>
+    <p class="lead">Сравните варианты досрочного погашения и сразу увидьте цену решения для срока, процентов и вашего ежемесячного бюджета.</p>
+    <p class="micro">Расчёт приблизительный: точный день досрочного платежа зависит от правил вашего банка.</p>
+  </header>
+
+  <main class="shell">
+    <div class="layout">
+      <aside class="panel inputs">
+        <div class="section-head"><h2>Ваши данные</h2><span class="section-kicker">пересчёт сразу</span></div>
+
+        <section class="form-section">
+          <h3>Ипотека</h3>
+          <div class="fields">
+            <div class="field wide"><label for="balance">Остаток долга</label><div class="suffix-wrap"><input id="balance" type="number" min="1" step="10000" value="3000000"><span class="suffix">₽</span></div></div>
+            <div class="field"><label for="rate">Ставка</label><div class="suffix-wrap"><input id="rate" type="number" min="0" max="99" step="0.1" value="12"><span class="suffix">%</span></div></div>
+            <div class="field"><label for="months">Осталось</label><div class="suffix-wrap"><input id="months" type="number" min="1" max="600" step="1" value="60"><span class="suffix">мес.</span></div></div>
+            <div class="field wide"><label for="payment">Текущий ежемесячный платёж</label><div class="suffix-wrap"><input id="payment" type="number" min="1" step="100" value="66733"><span class="suffix">₽</span></div></div>
+            <div class="field wide"><label for="nextDate">Дата следующего платежа</label><input id="nextDate" type="date" value="2026-11-15"></div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>Бюджет на месяц</h3>
+          <div class="fields">
+            <div class="field"><label for="income">Доход</label><div class="suffix-wrap"><input id="income" type="number" min="0" step="1000" value="150000"><span class="suffix">₽</span></div></div>
+            <div class="field"><label for="expenses">Бытовые расходы</label><div class="suffix-wrap"><input id="expenses" type="number" min="0" step="1000" value="80000"><span class="suffix">₽</span></div></div>
+            <div class="field wide"><label for="reserve">Оставить в запасе</label><div class="suffix-wrap"><input id="reserve" type="number" min="0" step="1000" value="10000"><span class="suffix">₽</span></div></div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>Как применить доплату</h3>
+          <div class="segmented">
+            <label><input type="radio" name="strategy" value="term" checked><span>Сократить<br>срок</span></label>
+            <label><input type="radio" name="strategy" value="payment"><span>Уменьшить<br>платёж</span></label>
+          </div>
+          <p class="hint" id="strategyHint">Обязательный платёж остаётся прежним, ипотека заканчивается раньше.</p>
+        </section>
+
+        <section class="form-section">
+          <h3>Когда вносить доплату</h3>
+          <select id="timing">
+            <option value="same">В день обычного платежа</option>
+            <option value="next">На следующий день</option>
+          </select>
+          <p class="hint">Выбор нужен для памятки. Универсальный расчёт по дням невозможен без правил конкретного банка.</p>
+        </section>
+
+        <section class="form-section">
+          <h3>Цель</h3>
+          <div class="field"><label for="goalDate">Хочу закрыть ипотеку к</label><input id="goalDate" type="date" value="2030-11-15"></div>
+        </section>
+
+        <button class="reset" id="reset" type="button">Вернуть пример</button>
+      </aside>
+
+      <section class="results" aria-live="polite">
+        <div class="error" id="error"></div>
+
+        <section class="panel summary">
+          <div class="section-head"><h2>Картина сейчас</h2><span class="section-kicker" id="modeLabel">сокращаем срок</span></div>
+          <div class="summary-grid">
+            <div class="summary-item"><span>Свободно до ипотеки</span><strong id="freeBefore">—</strong></div>
+            <div class="summary-item"><span>После текущего платежа</span><strong id="freeAfter">—</strong></div>
+            <div class="summary-item"><span>Максимальная доплата</span><strong id="maxExtra">—</strong></div>
+          </div>
+          <div class="budget-banner" id="budgetBanner">—</div>
+        </section>
+
+        <section class="panel scenario-wrap">
+          <div class="section-head"><h2>Четыре варианта</h2><span class="section-kicker">нажмите карточку для графика</span></div>
+          <div class="scenario-grid" id="scenarios"></div>
+        </section>
+
+        <section class="panel goal">
+          <div class="section-head"><h2>Цель по дате</h2><span class="section-kicker" id="goalDateLabel">—</span></div>
+          <div class="goal-content">
+            <p class="goal-copy" id="goalCopy">—</p>
+            <div class="goal-number"><span>Нужно платить всего в месяц</span><strong id="goalPayment">—</strong><small id="goalExtra">—</small></div>
+          </div>
+        </section>
+
+        <section class="panel details">
+          <div class="section-head"><h2 id="detailTitle">Динамика долга</h2><span class="section-kicker" id="detailKicker">—</span></div>
+          <div class="chart-wrap"><canvas id="chart" aria-label="График остатка долга"></canvas></div>
+          <div class="legend" id="legend"></div>
+          <details>
+            <summary>Показать помесячный расчёт выбранного варианта</summary>
+            <div class="table-scroller">
+              <table>
+                <thead><tr><th>Дата</th><th>Платёж</th><th>Доплата</th><th>Проценты</th><th>В основной долг</th><th>Остаток</th></tr></thead>
+                <tbody id="schedule"></tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+
+        <section class="panel bank-note">
+          <strong>Что проверить в приложении банка</strong>
+          <p id="bankText">Уточните, когда банк списывает досрочный платёж, нужно ли заранее подавать заявление и можно ли выбрать сокращение срока. Для вашего сценария выбран вариант: в день обычного платежа.</p>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <footer class="shell">Расчёт носит справочный характер и не является предложением банка или финансовой рекомендацией.</footer>
+
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const ids = ["balance", "rate", "months", "payment", "nextDate", "income", "expenses", "reserve", "timing", "goalDate"];
+      const extras = [0, 3000, 5000, 10000];
+      const colors = ["#748091", "#2859d9", "#0c8a65", "#9b51d0"];
+      let selected = 1;
+      let latest = [];
+
+      const rub = (n) => Number.isFinite(n) ? new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(Math.round(n)) + " ₽" : "—";
+      const shortRub = (n) => {
+        const abs = Math.abs(n);
+        if (abs >= 1e6) return (n / 1e6).toLocaleString("ru-RU", { maximumFractionDigits: 1 }) + " млн ₽";
+        if (abs >= 1e3) return (n / 1e3).toLocaleString("ru-RU", { maximumFractionDigits: 0 }) + " тыс. ₽";
+        return rub(n);
+      };
+      const num = (id) => Number($(id).value);
+      const strategy = () => document.querySelector('input[name="strategy"]:checked').value;
+      const parseDate = (s) => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+      const addMonths = (date, count) => {
+        const d = new Date(date);
+        const wanted = d.getDate();
+        d.setDate(1); d.setMonth(d.getMonth() + count);
+        const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        d.setDate(Math.min(wanted, last));
+        return d;
+      };
+      const fmtDate = (d, withYear = true) => new Intl.DateTimeFormat("ru-RU", withYear ? { month: "long", year: "numeric" } : { day: "numeric", month: "long" }).format(d);
+      const annuity = (principal, monthlyRate, count) => {
+        if (count <= 0) return principal;
+        if (monthlyRate === 0) return principal / count;
+        return principal * monthlyRate / (1 - Math.pow(1 + monthlyRate, -count));
+      };
+      const monthDiff = (from, to) => Math.max(0, (to.getFullYear() - from.getFullYear()) * 12 + to.getMonth() - from.getMonth() + 1);
+
+      function calculate(extra, mode) {
+        const principal = num("balance");
+        const monthlyRate = num("rate") / 1200;
+        const plannedMonths = Math.round(num("months"));
+        const startingPayment = num("payment");
+        const startDate = parseDate($("nextDate").value);
+        let balance = principal;
+        let payment = startingPayment;
+        let totalInterest = 0;
+        let totalPaid = 0;
+        const rows = [];
+        const hardLimit = Math.max(1200, plannedMonths * 3);
+
+        for (let i = 0; i < hardLimit && balance > .01; i++) {
+          const interest = balance * monthlyRate;
+          if (payment + extra <= interest && balance > payment + extra) throw new Error("Платёж не покрывает начисляемые проценты. Увеличьте платёж или проверьте исходные данные.");
+          const regular = Math.min(payment, balance + interest);
+          let principalPart = Math.max(0, regular - interest);
+          let afterRegular = Math.max(0, balance - principalPart);
+          const extraPaid = Math.min(extra, afterRegular);
+          balance = Math.max(0, afterRegular - extraPaid);
+          const paid = regular + extraPaid;
+          totalInterest += interest;
+          totalPaid += paid;
+          rows.push({ date: addMonths(startDate, i), regular, extra: extraPaid, interest, principal: principalPart + extraPaid, balance, payment: paid });
+
+          if (mode === "payment" && extra > 0 && balance > 0) {
+            const remaining = plannedMonths - i - 1;
+            if (remaining <= 0) break;
+            payment = annuity(balance, monthlyRate, remaining);
+          }
+          if (mode === "payment" && i + 1 >= plannedMonths && balance > .01) break;
+        }
+        return { extra, rows, months: rows.length, totalInterest, totalPaid, balance, payoff: rows.at(-1)?.date, firstOutflow: rows[0]?.payment || 0 };
+      }
+
+      function validate() {
+        const requiredPositive = ["balance", "months", "payment"];
+        if (requiredPositive.some(id => !Number.isFinite(num(id)) || num(id) <= 0)) return "Заполните остаток долга, срок и текущий платёж положительными числами.";
+        if (!Number.isFinite(num("rate")) || num("rate") < 0) return "Ставка не может быть отрицательной.";
+        if (!["nextDate", "goalDate"].every(id => $(id).value)) return "Укажите даты следующего платежа и цели.";
+        if (["income", "expenses", "reserve"].some(id => !Number.isFinite(num(id)) || num(id) < 0)) return "Доход, расходы и запас не могут быть отрицательными.";
+        return "";
+      }
+
+      function render() {
+        const error = validate();
+        $("error").classList.toggle("show", Boolean(error));
+        $("error").textContent = error;
+        if (error) return;
+
+        const mode = strategy();
+        $("modeLabel").textContent = mode === "term" ? "сокращаем срок" : "уменьшаем платёж";
+        $("strategyHint").textContent = mode === "term"
+          ? "Обязательный платёж остаётся прежним, ипотека заканчивается раньше."
+          : "Срок остаётся прежним, а обязательный платёж пересчитывается после каждой доплаты.";
+        try {
+          latest = extras.map(x => calculate(x, mode));
+        } catch (e) {
+          $("error").classList.add("show"); $("error").textContent = e.message; return;
+        }
+
+        const income = num("income"), expenses = num("expenses"), reserve = num("reserve"), payment = num("payment");
+        const freeBefore = income - expenses - reserve;
+        const freeAfter = freeBefore - payment;
+        $("freeBefore").textContent = rub(freeBefore);
+        $("freeAfter").textContent = rub(freeAfter);
+        $("freeAfter").style.color = freeAfter < 0 ? "var(--red)" : "var(--ink)";
+        $("maxExtra").textContent = rub(Math.max(0, freeAfter));
+        const banner = $("budgetBanner");
+        banner.className = "budget-banner " + (freeAfter >= 0 ? "ok" : "bad");
+        banner.textContent = freeAfter >= 0
+          ? `После обязательных расходов остаётся ${rub(freeAfter)}. Это безопасный верхний предел регулярной доплаты при заданном запасе.`
+          : `Даже без доплаты не хватает ${rub(Math.abs(freeAfter))} в месяц. Сначала стоит пересмотреть платёж, расходы или размер запаса.`;
+
+        const base = latest[0];
+        const cards = latest.map((item, i) => {
+          const leftover = income - expenses - reserve - item.firstOutflow;
+          const savedInterest = base.totalInterest - item.totalInterest;
+          const savedMonths = base.months - item.months;
+          const unresolved = item.balance > 1;
+          const title = i === 0 ? "Без доплаты" : `Доплата ${rub(item.extra)}`;
+          const payoff = unresolved ? "Остался долг" : fmtDate(item.payoff);
+          const secondary = mode === "term" ? (i === 0 ? `${item.months} мес.` : `на ${Math.max(0, savedMonths)} мес. раньше`) : `${item.months} мес. по плану`;
+          return `<article class="scenario ${selected === i ? "selected" : ""} ${i === 3 ? "best" : ""}" data-index="${i}" tabindex="0" role="button" aria-label="${title}">
+            <h3>${title}</h3><div class="date">${payoff}</div><div class="caption">${secondary}</div>
+            <div class="metrics">
+              <div class="metric"><span>Все проценты</span><strong>${rub(item.totalInterest)}</strong></div>
+              <div class="metric"><span>Экономия</span><strong>${i ? rub(Math.max(0, savedInterest)) : "—"}</strong></div>
+              <div class="metric"><span>Первый платёж</span><strong>${rub(item.firstOutflow)}</strong></div>
+              <div class="metric"><span>Останется на жизнь</span><strong>${rub(leftover)}</strong></div>
+            </div>
+            <div class="status ${leftover >= 0 && !unresolved ? "ok" : "bad"}">${unresolved ? "С текущими условиями долг не закрывается в заданный срок" : leftover >= 0 ? `Запас сохранён · свободно ${rub(leftover)}` : `Дефицит ${rub(Math.abs(leftover))} в месяц`}</div>
+          </article>`;
+        }).join("");
+        $("scenarios").innerHTML = cards;
+        document.querySelectorAll(".scenario").forEach(card => {
+          const choose = () => { selected = Number(card.dataset.index); renderDetails(); document.querySelectorAll(".scenario").forEach((c, j) => c.classList.toggle("selected", j === selected)); };
+          card.addEventListener("click", choose);
+          card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(); } });
+        });
+
+        renderGoal();
+        renderDetails();
+        const timing = $("timing").value === "same" ? "в день обычного платежа" : "на следующий день после обычного платежа";
+        $("bankText").textContent = `Уточните, когда банк списывает досрочный платёж, нужно ли заранее подавать заявление, есть ли минимальная сумма и можно ли выбрать сокращение срока. Для вашего сценария выбран вариант: ${timing}.`;
+      }
+
+      function renderGoal() {
+        const start = parseDate($("nextDate").value), goal = parseDate($("goalDate").value);
+        const count = monthDiff(start, goal);
+        $("goalDateLabel").textContent = fmtDate(goal);
+        if (goal < start || count < 1) {
+          $("goalCopy").textContent = "Дата цели должна быть не раньше следующего платежа.";
+          $("goalPayment").textContent = "—"; $("goalExtra").textContent = "Измените дату цели"; return;
+        }
+        const needed = annuity(num("balance"), num("rate") / 1200, count);
+        const extra = needed - num("payment");
+        const leftover = num("income") - num("expenses") - num("reserve") - needed;
+        $("goalPayment").textContent = rub(needed);
+        $("goalExtra").textContent = extra > 0 ? `Доплата сверх текущего платежа: ${rub(extra)}` : "Текущего платежа уже достаточно для этой даты";
+        $("goalCopy").textContent = leftover >= 0
+          ? `Чтобы закрыть ипотеку за ${count} мес., после всех указанных расходов и сохранения запаса будет оставаться около ${rub(leftover)} в месяц.`
+          : `Чтобы закрыть ипотеку за ${count} мес., ежемесячный бюджет будет уходить в минус примерно на ${rub(Math.abs(leftover))}. Цель стоит сдвинуть или пересмотреть расходы.`;
+      }
+
+      function renderDetails() {
+        const current = latest[selected];
+        if (!current) return;
+        $("detailTitle").textContent = selected === 0 ? "Динамика долга без доплаты" : `Динамика долга с доплатой ${rub(current.extra)}`;
+        $("detailKicker").textContent = current.balance > 1 ? "долг не закрыт" : `${current.months} мес. до закрытия`;
+        const body = current.rows.map(r => `<tr><td>${fmtDate(r.date, false)} ${r.date.getFullYear()}</td><td>${rub(r.regular)}</td><td>${rub(r.extra)}</td><td>${rub(r.interest)}</td><td>${rub(r.principal)}</td><td>${rub(r.balance)}</td></tr>`).join("");
+        $("schedule").innerHTML = body;
+        $("legend").innerHTML = latest.map((s, i) => `<span style="--dot:${colors[i]}">${i === 0 ? "Без доплаты" : `+ ${rub(s.extra)}`}</span>`).join("");
+        drawChart();
+      }
+
+      function drawChart() {
+        const canvas = $("chart");
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        const ctx = canvas.getContext("2d"); ctx.scale(dpr, dpr);
+        const w = rect.width, h = rect.height, pad = {l: 46, r: 10, t: 12, b: 30};
+        const maxMonths = Math.max(...latest.map(x => x.rows.length), 1), maxBalance = num("balance");
+        ctx.clearRect(0,0,w,h); ctx.font = "11px system-ui"; ctx.fillStyle = "#7b8793"; ctx.strokeStyle = "#e2e7eb"; ctx.lineWidth = 1;
+        for (let i=0;i<=4;i++) {
+          const y = pad.t + (h-pad.t-pad.b)*i/4;
+          ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+          ctx.fillText(shortRub(maxBalance*(1-i/4)).replace(" ₽",""), 0, y+4);
+        }
+        for (let i=0;i<=4;i++) {
+          const x = pad.l + (w-pad.l-pad.r)*i/4;
+          ctx.fillText(Math.round(maxMonths*i/4)+" мес.", x-12, h-8);
+        }
+        latest.forEach((s, idx) => {
+          const points = [{balance:maxBalance}, ...s.rows];
+          ctx.beginPath(); ctx.strokeStyle = colors[idx]; ctx.lineWidth = idx === selected ? 3.5 : 2; ctx.globalAlpha = idx === selected ? 1 : .46;
+          points.forEach((p,i) => {
+            const x = pad.l + (w-pad.l-pad.r)*(i/maxMonths);
+            const y = pad.t + (h-pad.t-pad.b)*(1-p.balance/maxBalance);
+            i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+          });
+          ctx.stroke(); ctx.globalAlpha = 1;
+        });
+      }
+
+      ids.forEach(id => $(id).addEventListener("input", render));
+      document.querySelectorAll('input[name="strategy"]').forEach(el => el.addEventListener("change", render));
+      $("reset").addEventListener("click", () => {
+        const values = { balance:3000000, rate:12, months:60, payment:66733, nextDate:"2026-11-15", income:150000, expenses:80000, reserve:10000, timing:"same", goalDate:"2030-11-15" };
+        Object.entries(values).forEach(([k,v]) => $(k).value = v);
+        document.querySelector('input[name="strategy"][value="term"]').checked = true; selected = 1; render();
+      });
+      window.addEventListener("resize", drawChart);
+      render();
+    })();
+  </script>
+</body>
+</html>
